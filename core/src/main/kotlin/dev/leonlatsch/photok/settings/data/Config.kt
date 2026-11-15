@@ -36,7 +36,7 @@ import kotlin.time.Duration.Companion.days
  * @since 1.0.0
  * @author Leon Latsch
  */
-class Config(context: Context) {
+class Config(context: Context) : PasswordAttemptStore {
 
     private val coroutineScope = CoroutineScope(Dispatchers.IO)
 
@@ -121,6 +121,20 @@ class Config(context: Context) {
     var galleryAlbumsDisplayMode: String
         get() = getString(GALLERY_ALBUMS_DISPLAY_MODE, GALLERY_ALBUMS_DISPLAY_MODE_DEFAULT) ?: GALLERY_ALBUMS_DISPLAY_MODE_DEFAULT
         set(value) = putString(GALLERY_ALBUMS_DISPLAY_MODE, value)
+
+    /**
+     * Number of consecutive failed password unlock attempts.
+     */
+    override var failedAttempts: Int
+        get() = getInt(SECURITY_FAILED_PASSWORD_ATTEMPTS, SECURITY_FAILED_PASSWORD_ATTEMPTS_DEFAULT)
+        set(value) = putInt(SECURITY_FAILED_PASSWORD_ATTEMPTS, value)
+
+    /**
+     * Timestamp in milliseconds until which unlocking with the password is blocked. Null if not locked.
+     */
+    override var lockedUntilMillis: Long?
+        get() = getLongOrNull(SECURITY_PASSWORD_LOCKED_UNTIL)
+        set(value) = putLongOrNull(SECURITY_PASSWORD_LOCKED_UNTIL, value)
 
     /**
      * Determines if screenshots should be allowed.
@@ -339,6 +353,9 @@ class Config(context: Context) {
         const val SECURITY_PASSWORD = "security^password"
         const val SECURITY_PASSWORD_DEFAULT = ""
 
+        const val SECURITY_FAILED_PASSWORD_ATTEMPTS = "security^failedPasswordAttempts"
+        const val SECURITY_FAILED_PASSWORD_ATTEMPTS_DEFAULT = 0
+        const val SECURITY_PASSWORD_LOCKED_UNTIL = "security^passwordLockedUntil"
         const val SECURITY_LOCK_TIMEOUT = "security^lockTimeout"
         const val SECURITY_LOCK_TIMEOUT_DEFAULT = 300000
 

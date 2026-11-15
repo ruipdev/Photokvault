@@ -16,12 +16,49 @@
 
 package dev.leonlatsch.photok.pro
 
+import dev.leonlatsch.photok.pro.domain.LOCKOUT_DURATION_MS
+import dev.leonlatsch.photok.pro.domain.MAX_PASSWORD_ATTEMPTS
 import dev.leonlatsch.photok.pro.domain.PasswordAttemptsResult
 import dev.leonlatsch.photok.pro.domain.PasswordAttemptsUseCase
+import dev.leonlatsch.photok.settings.data.PasswordAttemptStore
 import javax.inject.Inject
 
-class PasswordAttemptsUseCaseImpl @Inject constructor() : PasswordAttemptsUseCase {
-    override fun onFailedAttempt() = PasswordAttemptsResult.None
-    override fun onSuccessfulUnlock() = Unit
-    override fun currentLockout() = 0L
+/**
+ * FOSS implementation of the password attempt lockout:
+ * after [MAX_PASSWORD_ATTEMPTS] failed attempts the vault stays locked for [LOCKOUT_DURATION_MS].
+ */
+class PasswordAttemptsUseCaseImpl @Inject constructor(
+    private val store: PasswordAttemptStore,
+) : PasswordAttemptsUseCase {
+
+    override fun onFailedAttempt(): PasswordAttemptsResult {
+        val attempts = store.failedAttempts + 1
+
+        if (attempts >= MAX_PASSWORD_ATTEMPTS) {
+            val lockedUntil = System.currentTimeMillis() + LOCKOUT_DURATION_MS
+            store.lockedUntilMillis = lockedUntil
+            store.failedAttempts = 0
+            return PasswordAttemptsResult.Locked(lockedUntil)
+        }
+
+        store.failedAttempts = attempts
+        return PasswordAttemptsResult.None
+    }
+
+    override fun onSuccessfulUnlock() {
+        store.failedAttempts = 0
+        store.lockedUntilMillis = null
+    }
+
+    override fun currentLockout(): Long {
+        val lockedUntil = store.lockedUntilMillis ?: return 0L
+
+        if (lockedUntil <= System.currentTimeMillis()) {
+            store.lockedUntilMillis = null
+            store.failedAttempts = 0
+            return 0L
+        }
+
+        return lockedUntil
+    }
 }
