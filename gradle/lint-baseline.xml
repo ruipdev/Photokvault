@@ -146,7 +146,7 @@
         errorLine1="                    context.getString(R.string.settings_advanced_reset_confirmation)"
         errorLine2="                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/settings/ui/compose/SettingsScreen.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/settings/ui/compose/SettingsScreen.kt"
             line="149"
             column="21"/>
     </issue>
@@ -157,7 +157,7 @@
         errorLine1="            val email = context.getString(R.string.settings_other_feedback_mail_emailaddress)"
         errorLine2="                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/settings/ui/compose/SettingsScreen.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/settings/ui/compose/SettingsScreen.kt"
             line="166"
             column="25"/>
     </issue>
@@ -168,7 +168,7 @@
         errorLine1="                &quot;${context.getString(R.string.settings_other_feedback_mail_subject)} (App ${BuildConfig.VERSION_NAME} / Android ${Build.VERSION.RELEASE})&quot;"
         errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/settings/ui/compose/SettingsScreen.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/settings/ui/compose/SettingsScreen.kt"
             line="168"
             column="20"/>
     </issue>
@@ -179,7 +179,7 @@
         errorLine1="            val text = context.getString(R.string.settings_other_feedback_mail_body)"
         errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/settings/ui/compose/SettingsScreen.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/settings/ui/compose/SettingsScreen.kt"
             line="169"
             column="24"/>
     </issue>
@@ -190,7 +190,7 @@
         errorLine1="                chooserTitle = context.getString(R.string.settings_other_feedback_title)"
         errorLine2="                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/settings/ui/compose/SettingsScreen.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/settings/ui/compose/SettingsScreen.kt"
             line="175"
             column="32"/>
     </issue>
@@ -201,7 +201,7 @@
         errorLine1="            fragment.openUrl(context.getString(R.string.settings_other_donate_url))"
         errorLine2="                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/settings/ui/compose/SettingsScreen.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/settings/ui/compose/SettingsScreen.kt"
             line="181"
             column="30"/>
     </issue>
@@ -212,7 +212,7 @@
         errorLine1="            fragment.openUrl(context.getString(R.string.settings_other_sourcecode_url))"
         errorLine2="                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/settings/ui/compose/SettingsScreen.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/settings/ui/compose/SettingsScreen.kt"
             line="186"
             column="30"/>
     </issue>
@@ -223,7 +223,7 @@
         errorLine1="    modifier: Modifier = Modifier,"
         errorLine2="    ~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/ui/components/AppName.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/ui/components/AppName.kt"
             line="36"
             column="5"/>
     </issue>
@@ -234,7 +234,7 @@
         errorLine1="    modifier: Modifier = Modifier,"
         errorLine2="    ~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/gallery/components/ImportMenuBottomSheet.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/gallery/components/ImportMenuBottomSheet.kt"
             line="271"
             column="5"/>
     </issue>
@@ -520,7 +520,7 @@
         errorLine1="    override fun onReceive(context: Context?, intent: Intent?) {"
         errorLine2="                 ~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/DialLauncher.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/DialLauncher.kt"
             line="39"
             column="18"/>
     </issue>
@@ -955,7 +955,7 @@
         errorLine1="        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))"
         errorLine2="                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/uicomponnets/base/BaseDialogFragment.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/ui/components/legacy/base/BaseDialogFragment.kt"
             line="40"
             column="47"/>
     </issue>
@@ -966,7 +966,7 @@
         errorLine1="            intent.data = Uri.parse(it)"
         errorLine2="                          ~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/settings/ui/credits/CreditsFragment.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/settings/ui/credits/CreditsFragment.kt"
             line="73"
             column="27"/>
     </issue>
@@ -977,7 +977,7 @@
         errorLine1="            intent.data = Uri.parse(it)"
         errorLine2="                          ~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/settings/ui/credits/CreditsFragment.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/settings/ui/credits/CreditsFragment.kt"
             line="73"
             column="27"/>
     </issue>
@@ -988,7 +988,7 @@
         errorLine1="            val styledAttrs = context.obtainStyledAttributes(it, R.styleable.PasswordEditText, 0, 0)"
         errorLine2="                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/uicomponnets/PasswordEditText.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/ui/components/legacy/PasswordEditText.kt"
             line="110"
             column="31"/>
     </issue>
@@ -999,7 +999,7 @@
         errorLine1="    intent.data = Uri.parse(url)"
         errorLine2="                  ~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/other/Utils.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/other/Utils.kt"
             line="115"
             column="19"/>
     </issue>
@@ -1010,7 +1010,7 @@
         errorLine1="    intent.data = Uri.parse(url)"
         errorLine2="                  ~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/other/Utils.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/other/Utils.kt"
             line="115"
             column="19"/>
     </issue>
@@ -1021,7 +1021,7 @@
         errorLine1="    intent.data = Uri.parse(url)"
         errorLine2="                  ~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/other/Utils.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/other/Utils.kt"
             line="123"
             column="19"/>
     </issue>
@@ -1032,7 +1032,7 @@
         errorLine1="    intent.data = Uri.parse(url)"
         errorLine2="                  ~~~~~~~~~~~~~~">
         <location
-            file="src/main/java/dev/leonlatsch/photok/other/Utils.kt"
+            file="src/main/kotlin/dev/leonlatsch/photok/other/Utils.kt"
             line="123"
             column="19"/>
     </issue>

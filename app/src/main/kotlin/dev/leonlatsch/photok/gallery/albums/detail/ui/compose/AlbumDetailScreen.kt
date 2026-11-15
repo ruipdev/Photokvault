@@ -1,0 +1,217 @@
+/*
+ *   Copyright 2020–2026 Leon Latsch
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ */
+
+package dev.leonlatsch.photok.gallery.albums.detail.ui.compose
+
+import androidx.activity.compose.LocalActivity
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.fragment.app.FragmentActivity
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.leonlatsch.photok.R
+import dev.leonlatsch.photok.gallery.albums.detail.ui.AlbumDetailNavigator
+import dev.leonlatsch.photok.gallery.albums.detail.ui.AlbumDetailUiEvent
+import dev.leonlatsch.photok.gallery.albums.detail.ui.AlbumDetailViewModel
+import dev.leonlatsch.photok.gallery.albums.ui.compose.RenameAlbumDialog
+import dev.leonlatsch.photok.gallery.components.MultiSelectionBackHandler
+import dev.leonlatsch.photok.gallery.components.rememberMultiSelectionState
+import dev.leonlatsch.photok.gallery.ui.navigation.PhotoActionsNavigator
+import dev.leonlatsch.photok.main.ui.navigation.LocalMainMenuPadding
+import dev.leonlatsch.photok.navigation.LocalNavigator
+import dev.leonlatsch.photok.sort.domain.SortConfig
+import dev.leonlatsch.photok.sort.ui.SortingMenu
+import dev.leonlatsch.photok.sort.ui.SortingMenuIconButton
+import dev.leonlatsch.photok.ui.components.ObserveAsEvents
+import dev.leonlatsch.photok.ui.components.ConfirmationDialog
+import dev.leonlatsch.photok.ui.components.RoundedDropdownMenu
+
+@Composable
+fun AlbumDetailScreen(albumUuid: String) {
+    val viewModel = hiltViewModel<AlbumDetailViewModel, AlbumDetailViewModel.Factory>(
+        creationCallback = { factory -> factory.create(albumUuid) }
+    )
+    val navigator = LocalNavigator.current
+    val fragmentActivity = LocalActivity.current as? FragmentActivity
+
+    ObserveAsEvents(viewModel.photoActions) { action ->
+        fragmentActivity ?: return@ObserveAsEvents
+        PhotoActionsNavigator.navigate(action, fragmentActivity, navigator)
+    }
+
+    ObserveAsEvents(viewModel.navEvents) { event ->
+        fragmentActivity ?: return@ObserveAsEvents
+        AlbumDetailNavigator.navigate(event, fragmentActivity, navigator)
+    }
+
+    AlbumDetailScreen(viewModel)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AlbumDetailScreen(viewModel: AlbumDetailViewModel) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    val navigator = LocalNavigator.current
+
+    var showConfirmDeleteDialog by remember { mutableStateOf(false) }
+    var showRenameDialog by remember { mutableStateOf(false) }
+
+    val multiSelectionState = rememberMultiSelectionState(
+        items = uiState.photos.map { it.uuid }
+    )
+
+    MultiSelectionBackHandler(multiSelectionState)
+
+    Scaffold(
+        topBar = {
+            var showMore by remember { mutableStateOf(false) }
+
+            LargeTopAppBar(
+                title = { Text(uiState.albumName) },
+                navigationIcon = {
+                    IconButton(
+                        onClick = navigator::goBack,
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_back),
+                            contentDescription = stringResource(R.string.process_close)
+                        )
+                    }
+                },
+                windowInsets = WindowInsets.statusBars,
+                scrollBehavior = scrollBehavior,
+                actions = {
+                    AnimatedVisibility(
+                        visible = multiSelectionState.isActive.value.not(),
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            var showSortMenu by remember { mutableStateOf(false) }
+
+                            SortingMenuIconButton(
+                                config = SortConfig.Album,
+                                sort = uiState.sort,
+                                onClick = { showSortMenu = true }
+                            )
+
+                            SortingMenu(
+                                config = SortConfig.Album,
+                                expanded = showSortMenu,
+                                onDismissRequest = { showSortMenu = false },
+                                sort = uiState.sort,
+                                onSortChanged = { viewModel.handleUiEvent(AlbumDetailUiEvent.SortChanged(it)) },
+                            )
+
+                            IconButton(onClick = { showMore = true }) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_more),
+                                    contentDescription = stringResource(R.string.common_more)
+                                )
+                            }
+
+                            RoundedDropdownMenu(
+                                expanded = showMore,
+                                onDismissRequest = { showMore = false },
+                                modifier = Modifier.animateContentSize()
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.common_delete)) },
+                                    onClick = {
+                                        showMore = false
+                                        showConfirmDeleteDialog = true
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            painter = painterResource(R.drawable.ic_delete),
+                                            contentDescription = stringResource(R.string.common_delete)
+                                        )
+                                    }
+                                )
+
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.common_rename)) },
+                                    onClick = {
+                                        showMore = false
+                                        showRenameDialog = true
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            painter = painterResource(R.drawable.ic_edit),
+                                            contentDescription = stringResource(R.string.common_rename),
+                                        )
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            )
+        }
+    ) { contentPadding ->
+        AlbumDetailContent(
+            uiState = uiState,
+            handleUiEvent = { viewModel.handleUiEvent(it) },
+            multiSelectionState = multiSelectionState,
+            modifier = Modifier
+                .padding(top = contentPadding.calculateTopPadding())
+                .nestedScroll(scrollBehavior.nestedScrollConnection),
+            contentPadding = LocalMainMenuPadding.current,
+        )
+
+        ConfirmationDialog(
+            show = showConfirmDeleteDialog,
+            onDismissRequest = { showConfirmDeleteDialog = false },
+            text = stringResource(R.string.common_are_you_sure),
+            onConfirm = { viewModel.handleUiEvent(AlbumDetailUiEvent.DeleteAlbum) }
+        )
+
+        RenameAlbumDialog(
+            show = showRenameDialog,
+            onDismiss = { showRenameDialog = false },
+            currentName = uiState.albumName,
+            onRename = { newName ->
+                viewModel.handleUiEvent(AlbumDetailUiEvent.RenameAlbum(newName))
+            }
+        )
+    }
+}

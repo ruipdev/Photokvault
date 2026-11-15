@@ -1,0 +1,189 @@
+/*
+ *   Copyright 2020–2026 Leon Latsch
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ */
+
+package dev.leonlatsch.photok.devsettings.ui.compose
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import dev.leonlatsch.photok.BuildConfig
+import dev.leonlatsch.photok.R
+import dev.leonlatsch.photok.devsettings.ui.DevSettingsUiEvent
+import dev.leonlatsch.photok.devsettings.ui.DevSettingsUiState
+import dev.leonlatsch.photok.devsettings.ui.DevSettingsViewModel
+import dev.leonlatsch.photok.main.ui.navigation.AppRoute
+import dev.leonlatsch.photok.main.ui.navigation.LocalMainMenuPadding
+import dev.leonlatsch.photok.navigation.LocalNavigator
+import dev.leonlatsch.photok.ui.theme.AppTheme
+import dev.leonlatsch.photok.ui.theme.Dimens
+import dev.leonlatsch.photok.ui.components.AppName
+
+@Composable
+fun DevSettingsScreen(
+    viewModel: DevSettingsViewModel = hiltViewModel(),
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val navigator = LocalNavigator.current
+
+    DevSettingsContent(
+        uiState = uiState,
+        handleUiEvent = viewModel::handleUiEvent,
+        onClose = navigator::goBack,
+        onOpenPreferencesEditor = { navigator.navigate(AppRoute.PreferencesEditor) },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DevSettingsContent(
+    uiState: DevSettingsUiState,
+    handleUiEvent: (DevSettingsUiEvent) -> Unit,
+    onClose: () -> Unit,
+    onOpenPreferencesEditor: () -> Unit,
+) {
+    Scaffold(
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+            ) {
+                IconButton(
+                    onClick = onClose,
+                    modifier = Modifier.align(Alignment.TopStart),
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_back),
+                        contentDescription = stringResource(R.string.process_close),
+                    )
+                }
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Dimens.spacingSmall)
+                ) {
+                    AppName()
+                    Text(
+                        text = "Dev Settings",
+                        fontFamily = FontFamily.Monospace
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spacingXxSmall)
+                    ) {
+                        Text(
+                            text = BuildConfig.VERSION_NAME,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.outline,
+                            fontFamily = FontFamily.Monospace
+                        )
+                    }
+                }
+            }
+        }
+    ) { contentPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    top = contentPadding.calculateTopPadding(),
+                    bottom = LocalMainMenuPadding.current.calculateBottomPadding(),
+                ),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Fake has pro",
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Text(
+                        text = "Overrides hasPro to true. Only has an effect in debug builds.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline,
+                    )
+                }
+                Switch(
+                    checked = uiState.overrideHasPro,
+                    onCheckedChange = { handleUiEvent(DevSettingsUiEvent.ToggleOverrideHasPro(it)) },
+                )
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onOpenPreferencesEditor)
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = "Shared preferences",
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+                Text(
+                    text = "View and edit all shared preferences files.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.outline,
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun DevSettingsScreenPreview() {
+    AppTheme {
+        DevSettingsContent(
+            uiState = DevSettingsUiState(overrideHasPro = true),
+            handleUiEvent = {},
+            onClose = {},
+            onOpenPreferencesEditor = {},
+        )
+    }
+}
