@@ -91,7 +91,7 @@ private fun AppNavDisplay(
                     OnboardingScreen()
                 }
                 entry<RootRoute.Unlock> {
-                    UnlockScreen()
+                    UnlockScreen(onUnlockSuccess = { navigator.replaceAll(RootRoute.Main) })
                 }
                 entry<RootRoute.RecoveryPhraseRestore> {
                     RecoveryPhraseRestoreScreen(

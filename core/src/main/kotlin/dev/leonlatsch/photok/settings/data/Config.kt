@@ -66,6 +66,13 @@ class Config(context: Context) {
         set(value) = putBoolean(SYSTEM_FIRST_START, value)
 
     /**
+     * Determines if the gallery should be blurred for privacy.
+     */
+    var galleryBlurEnabled: Boolean
+        get() = getBoolean("gallery_blur_enabled", false)
+        set(value) = putBoolean("gallery_blur_enabled", value)
+
+    /**
      * The onboarding step to resume at. Null if no onboarding is in progress.
      */
     var systemOnboardingStep: String?
@@ -382,4 +389,5 @@ class Config(context: Context) {
         const val PRO_BANNER_DISMISSED = "internal^proBannerDismissed"
         const val PRO_BANNER_DISMISSED_DEFAULT = false
     }
+
 }

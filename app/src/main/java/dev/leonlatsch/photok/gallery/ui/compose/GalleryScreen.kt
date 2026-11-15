@@ -22,8 +22,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -60,6 +62,7 @@ fun GalleryScreen(
     viewModel: GalleryViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isBlurred by viewModel.isBlurred.collectAsStateWithLifecycle() 
     val navigator = LocalNavigator.current
     val fragmentActivity = LocalActivity.current as? FragmentActivity
 
@@ -87,9 +90,13 @@ fun GalleryScreen(
                 windowInsets = WindowInsets.statusBars,
                 scrollBehavior = scrollBehavior,
                 actions = {
+                    // Botão de Toggle do Desfoque
+                    IconButton(onClick = { viewModel.toggleBlur() }) {
+                        Text(text = if (isBlurred) "🙈" else "👁️") 
+                    }
+
                     if (uiState is GalleryUiState.Content) {
                         val sort = (uiState as GalleryUiState.Content).sort
-
                         var showSortMenu by remember { mutableStateOf(false) }
 
                         SortingMenuIconButton(
@@ -124,8 +131,10 @@ fun GalleryScreen(
 
             is GalleryUiState.Content -> {
                 val contentUiState = uiState as GalleryUiState.Content
+                val dateMap = contentUiState.photos.associate { it.uuid to it.importedAt }
                 val multiSelectionState = rememberMultiSelectionState(
-                    items = contentUiState.photos.map { it.uuid }
+                    items = contentUiState.photos.map { it.uuid },
+                    dateMap = dateMap
                 )
 
                 MultiSelectionBackHandler(multiSelectionState)
@@ -137,6 +146,7 @@ fun GalleryScreen(
                     modifier = modifier,
                     contentPadding = mainMenuPadding,
                     gridState = gridState,
+                    isBlurred = isBlurred, 
                 )
 
                 AlbumPickerDialog(

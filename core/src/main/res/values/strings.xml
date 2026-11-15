@@ -486,4 +486,7 @@
     <string name="recovery_phrase_copied_description">Paste it somewhere safe outside this phone</string>
     <string name="recovery_phrase_screenshot_title">Screenshot taken</string>
     <string name="recovery_phrase_screenshot_description">Look for it in your Screenshots album</string>
+    <string name="menu_ms_select_same_day">Select same day</string>
+    <string name="menu_ms_select_same_month">Select same month</string>
+    <string name="menu_ms_select_same_year">Select same year</string>
 </resources>

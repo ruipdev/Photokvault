@@ -62,6 +62,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
 import androidx.compose.ui.graphics.Color
@@ -100,6 +101,7 @@ fun PhotoGallery(
     photos: List<PhotoTile>,
     albumName: String?,
     multiSelectionState: MultiSelectionState,
+    isBlurred: Boolean = false,
     onOpenPhoto: (PhotoTile) -> Unit,
     onExport: (Uri?) -> Unit,
     onDelete: () -> Unit,
@@ -124,6 +126,7 @@ fun PhotoGallery(
         PhotoGrid(
             photos = photos,
             multiSelectionState = multiSelectionState,
+            isBlurred = isBlurred, // PASSADO AQUI
             openPhoto = onOpenPhoto,
             contentPadding = contentPadding,
             gridState = gridState,
@@ -259,6 +262,7 @@ fun PhotoGallery(
 private fun PhotoGrid(
     photos: List<PhotoTile>,
     multiSelectionState: MultiSelectionState,
+    isBlurred: Boolean = false,
     openPhoto: (PhotoTile) -> Unit,
     contentPadding: PaddingValues,
     gridState: LazyGridState,
@@ -314,6 +318,7 @@ private fun PhotoGrid(
             GalleryPhotoTile(
                 photoTile = it,
                 multiSelectionActive = multiSelectionState.isActive.value,
+                isBlurred = isBlurred, // PASSADO AQUI
                 onClicked = {
                     if (multiSelectionState.isActive.value.not()) {
                         openPhoto(it)
@@ -368,10 +373,12 @@ private fun GalleryPhotoTile(
     selected: Boolean,
     onClicked: () -> Unit,
     onLongPress: () -> Unit,
+    isBlurred: Boolean = false,
 ) {
     Box(
         modifier = modifier
             .padding(.5.dp)
+            .then(if (isBlurred) Modifier.blur(20.dp) else Modifier) // BLUR APLICADO NO CONTAINER
             .combinedClickable(
                 role = Role.Image,
                 onClick = onClicked,

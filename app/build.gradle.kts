@@ -48,6 +48,7 @@ android {
 
         create("foss") {
             dimension = "distribution"
+            applicationIdSuffix = ".debug"
             buildConfigField("Boolean", "PLAY", "false")
 
             if (!isReleaseBuildInvocation) {

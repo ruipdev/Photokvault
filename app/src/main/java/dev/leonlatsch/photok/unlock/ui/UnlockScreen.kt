@@ -16,264 +16,117 @@
 
 package dev.leonlatsch.photok.unlock.ui
 
-import androidx.activity.compose.LocalActivity
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalResources
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dev.leonlatsch.photok.R
-import dev.leonlatsch.photok.main.ui.navigation.RootRoute
-import dev.leonlatsch.photok.navigation.LocalNavigator
-import dev.leonlatsch.photok.other.extensions.hideKeyboard
-import dev.leonlatsch.photok.ui.ObserveAsEvents
 import dev.leonlatsch.photok.ui.components.PasswordField
-import dev.leonlatsch.photok.ui.theme.AppTheme
 import dev.leonlatsch.photok.ui.theme.Dimens
-import dev.leonlatsch.photok.ui.uicomponents.AppName
-import dev.leonlatsch.photok.uicomponnets.Dialogs
 import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun UnlockScreen(viewModel: UnlockViewModel = hiltViewModel()) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val navigator = LocalNavigator.current
-    val activity = LocalActivity.current
-    val context = LocalContext.current
-    val resources = LocalResources.current
-
-    ObserveAsEvents(viewModel.navigationEvents) { event ->
-        when (event) {
-            UnlockNavigationEvent.Unlocked -> {
-                activity?.hideKeyboard()
-                navigator.replaceAll(RootRoute.Main)
-            }
-
-            UnlockNavigationEvent.ContinueOnboarding -> {
-                activity?.hideKeyboard()
-                navigator.replaceAll(RootRoute.Onboarding)
-            }
-
-            UnlockNavigationEvent.StartLegacyMigration -> {
-                activity?.hideKeyboard()
-                navigator.replaceAll(RootRoute.EncryptionMigration)
-            }
-
-            UnlockNavigationEvent.ShowRecoveryPhraseRestore -> {
-                activity?.hideKeyboard()
-                navigator.navigate(RootRoute.RecoveryPhraseRestore)
-            }
-
-            UnlockNavigationEvent.ShowError -> {
-                Dialogs.showLongToast(context, resources.getString(R.string.common_error))
-            }
-        }
-    }
-
-    UnlockScreenContent(
-        uiState = uiState,
-        handleUiEvent = viewModel::handleUiEvent,
-    )
-}
-
-@Composable
-private fun UnlockScreenContent(
-    uiState: UnlockUiState,
-    handleUiEvent: (UnlockUiEvent) -> Unit,
+fun UnlockScreen(
+    onUnlockSuccess: () -> Unit,
+    viewModel: UnlockViewModel = hiltViewModel(),
 ) {
-    val fragmentActivity = LocalActivity.current as? FragmentActivity
-    val focusManager = LocalFocusManager.current
+    val uiState: UnlockUiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    fun unlockWithPassword() {
-        focusManager.clearFocus()
-        handleUiEvent(UnlockUiEvent.UnlockWithPassword)
-    }
-
-    // Offer biometrics right away, but only once per screen so a canceled prompt stays canceled.
-    var biometricPromptShown by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(uiState.biometricAvailable, uiState.lockedUntil) {
-        if (biometricPromptShown || !uiState.biometricAvailable || uiState.lockedUntil != null) {
-            return@LaunchedEffect
-        }
-        fragmentActivity ?: return@LaunchedEffect
-
-        biometricPromptShown = true
-        delay(0.5.seconds)
-        handleUiEvent(UnlockUiEvent.UnlockWithBiometric(fragmentActivity))
-    }
-
-    Scaffold(
-        modifier = Modifier.imePadding(),
-        bottomBar = {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-            ) {
-                AnimatedVisibility(uiState.biometricAvailable && uiState.lockedUntil == null) {
-                    TextButton(
-                        onClick = {
-                            fragmentActivity ?: return@TextButton
-                            handleUiEvent(UnlockUiEvent.UnlockWithBiometric(fragmentActivity))
-                        },
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_fingerprint),
-                                contentDescription = null,
-                            )
-                            Text(stringResource(R.string.biometric_unlock_hint_button))
-                        }
-                    }
-                }
-            }
-        }
-    ) { contentPadding ->
-        Box(modifier = Modifier.fillMaxSize()) {
-            // The app name scrolls along so the form still fits on small screens with the keyboard open.
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(contentPadding)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = Dimens.spacingLarge)
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    AppName(
-                        fontSize = 62.sp,
-                        modifier = Modifier
-                            .padding(top = Dimens.spacingLarge, bottom = 40.dp)
-                    )
-                }
-
-                Text(
-                    text = stringResource(R.string.unlock_title),
-                    style = MaterialTheme.typography.displayMedium,
-                    modifier = Modifier.width(280.dp)
-                )
-
-                Spacer(Modifier.height(Dimens.spacingLarge))
-
-                PasswordField(
-                    value = uiState.password,
-                    onValueChange = { handleUiEvent(UnlockUiEvent.PasswordChanged(it)) },
-                    label = stringResource(R.string.unlock_enter_password),
-                    error = stringResource(R.string.unlock_wrong_password).takeIf { uiState.wrongPassword },
-                    onDone = { unlockWithPassword() },
-                )
-
-                Spacer(Modifier.height(Dimens.spacingLarge))
-
-                Button(
-                    onClick = { unlockWithPassword() },
-                    enabled = !uiState.loading && uiState.password.isNotEmpty(),
-                    modifier = Modifier
-                        .width(200.dp)
-                        .align(Alignment.CenterHorizontally)
-                ) {
-                    if (uiState.loading) {
-                        CircularProgressIndicator(
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    } else {
-                        Text(stringResource(R.string.unlock_button))
-                    }
-                }
-
-                AnimatedVisibility(
-                    visible = uiState.recoveryPhraseAvailable,
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                ) {
-                    TextButton(
-                        onClick = { handleUiEvent(UnlockUiEvent.ForgotPassword) },
-                    ) {
-                        Text(stringResource(R.string.recovery_phrase_forgot_password))
-                    }
-                }
-
-                Spacer(Modifier.height(Dimens.spacingLarge))
-            }
-
-            if (uiState.lockedUntil != null) {
-                LockoutContent(lockedUntil = uiState.lockedUntil)
-            }
+    // Se o desbloqueio foi bem-sucedido, chama a função de sucesso
+    LaunchedEffect(uiState.isUnlocked) {
+        if (uiState.isUnlocked) {
+            onUnlockSuccess()
         }
     }
-}
 
-@Preview(showSystemUi = true)
-@Composable
-private fun Preview() {
-    AppTheme {
-        UnlockScreenContent(
-            uiState = UnlockUiState(
-                password = "secret",
-                biometricAvailable = true,
-                recoveryPhraseAvailable = true,
-            ),
-            handleUiEvent = {},
+    // Se estiver bloqueado, mostra o ecrã de contagem decrescente
+    if (uiState.lockedUntil != null) {
+        LockedContent(uiState.lockedUntil!!)
+        return
+    }
+
+    // Caso contrário, mostra o ecrã normal de desbloqueio
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(Dimens.spacingLarge),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = stringResource(R.string.unlock_title),
+            style = MaterialTheme.typography.headlineMedium
         )
+        
+        Spacer(modifier = Modifier.height(Dimens.spacingMedium))
+
+        PasswordField(
+            value = uiState.inputValue,
+            onValueChange = { viewModel.onPasswordChange(it) },
+            label = stringResource(R.string.password),
+            error = if (uiState.wrongPassword) "Senha incorreta" else null,
+            onDone = { viewModel.unlock() }
+        )
+        
+        if (uiState.loading) {
+            Spacer(modifier = Modifier.height(Dimens.spacingSmall))
+            Text(text = "A verificar...")
+        }
     }
 }
 
-@Preview(showSystemUi = true)
 @Composable
-private fun PreviewWrongPassword() {
-    AppTheme {
-        UnlockScreenContent(
-            uiState = UnlockUiState(password = "secret", wrongPassword = true),
-            handleUiEvent = {},
+private fun LockedContent(lockedUntilTimestamp: Long) {
+    var secondsLeft by remember { mutableLongStateOf(0L) }
+
+    LaunchedEffect(lockedUntilTimestamp) {
+        while (true) {
+            val now = System.currentTimeMillis()
+            val remaining = (lockedUntilTimestamp - now) / 1000
+            if (remaining <= 0) break
+            secondsLeft = remaining
+            delay(1000L)
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(Dimens.spacingLarge),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "🔒 App Bloqueada",
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.error
+        )
+        Spacer(modifier = Modifier.height(Dimens.spacingMedium))
+        Text(
+            text = "Demasiadas tentativas falhadas.",
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(Dimens.spacingSmall))
+        Text(
+            text = "Tente novamente em ${secondsLeft / 60}:${String.format("%02d", secondsLeft % 60)}",
+            style = MaterialTheme.typography.bodyLarge
         )
     }
 }

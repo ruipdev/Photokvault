@@ -16,12 +16,10 @@
 
 package dev.leonlatsch.photok.gallery.ui
 
-import android.content.res.Resources
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.leonlatsch.photok.R
 import dev.leonlatsch.photok.gallery.albums.domain.AlbumRepository
 import dev.leonlatsch.photok.gallery.components.ImportChoice
 import dev.leonlatsch.photok.gallery.components.PhotoTile
@@ -30,6 +28,7 @@ import dev.leonlatsch.photok.gallery.ui.navigation.GalleryNavigationEvent
 import dev.leonlatsch.photok.gallery.ui.navigation.PhotoAction
 import dev.leonlatsch.photok.model.repositories.ImportSource
 import dev.leonlatsch.photok.model.repositories.PhotoRepository
+import dev.leonlatsch.photok.settings.data.Config
 import dev.leonlatsch.photok.sort.domain.SortConfig
 import dev.leonlatsch.photok.sort.domain.SortRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,6 +36,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -46,6 +46,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GalleryViewModel @Inject constructor(
+    private val config: Config,
     photoRepository: PhotoRepository,
     private val galleryUiStateFactory: GalleryUiStateFactory,
     private val sortRepository: SortRepository,
@@ -59,6 +60,15 @@ class GalleryViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), listOf())
 
     private val showAlbumSelectionDialog = MutableStateFlow(false)
+
+    // ALTERADO: Começa sempre como true (desfocado) por segurança
+    private val _isBlurred = MutableStateFlow(true)
+    val isBlurred = _isBlurred.asStateFlow()
+
+    init {
+        // Garante que ao abrir a app, o blur está ativo independentemente da configuração anterior
+        _isBlurred.value = true
+    }
 
     val uiState: StateFlow<GalleryUiState> = combine(
         photosFlow,
@@ -86,6 +96,10 @@ class GalleryViewModel @Inject constructor(
                 sortRepository.updateSortFor(albumUuid = null, sort = event.sort)
             }
         }
+    }
+
+    fun toggleBlur() {
+        _isBlurred.value = !_isBlurred.value
     }
 
     private fun onImportChoice(choice: ImportChoice) {
@@ -122,4 +136,3 @@ class GalleryViewModel @Inject constructor(
         photoActionsChannel.trySend(PhotoAction.OpenPhoto(item.uuid))
     }
 }
-

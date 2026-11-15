@@ -23,10 +23,11 @@ package dev.leonlatsch.photok.unlock.ui
  * @author Leon Latsch
  */
 data class UnlockUiState(
-    val password: String = "",
+    val inputValue: String = "",
     val loading: Boolean = false,
     val wrongPassword: Boolean = false,
     val biometricAvailable: Boolean = false,
     val recoveryPhraseAvailable: Boolean = false,
     val lockedUntil: Long? = null,
+    val isUnlocked: Boolean = false,
 )

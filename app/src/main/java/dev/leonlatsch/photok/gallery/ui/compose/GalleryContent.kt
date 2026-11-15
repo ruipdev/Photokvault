@@ -49,6 +49,7 @@ fun GalleryContent(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
     gridState: LazyGridState = rememberLazyGridState(),
+    isBlurred: Boolean = false, // NOVO PARÂMETRO
 ) {
     PhotoGallery(
         contentPadding = contentPadding,
@@ -57,6 +58,7 @@ fun GalleryContent(
         photos = uiState.photos,
         albumName = null,
         multiSelectionState = multiSelectionState,
+        isBlurred = isBlurred, // NOVO: Passa para a grelha
         onOpenPhoto = { handleUiEvent(GalleryUiEvent.OpenPhoto(it)) },
         onExport = { targetUri ->
             handleUiEvent(
@@ -77,14 +79,30 @@ fun GalleryContent(
             handleUiEvent(GalleryUiEvent.OnImportChoice(it))
         },
         additionalMultiSelectionActions = {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.menu_ms_select_same_day)) },
+                onClick = {
+                    multiSelectionState.selectSameDay()
+                    multiSelectionState.dismissMore()
+                }
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.menu_ms_select_same_month)) },
+                onClick = {
+                    multiSelectionState.selectSameMonth()
+                    multiSelectionState.dismissMore()
+                }
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.menu_ms_select_same_year)) },
+                onClick = {
+                    multiSelectionState.selectSameYear()
+                    multiSelectionState.dismissMore()
+                }
+            )
             HorizontalDivider()
             DropdownMenuItem(
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_folder),
-                        contentDescription = null
-                    )
-                },
+                leadingIcon = { Icon(painterResource(R.drawable.ic_folder), contentDescription = null) },
                 text = { Text(stringResource(R.string.menu_ms_add_to_album)) },
                 onClick = {
                     handleUiEvent(GalleryUiEvent.OnAddToAlbum)
@@ -98,32 +116,20 @@ fun GalleryContent(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFF, showSystemUi = true)
 @Composable
 fun GalleryContentPreview() {
+    val now = System.currentTimeMillis()
     AppTheme {
         GalleryContent(
             uiState = GalleryUiState.Content(
                 photos = listOf(
-                    PhotoTile("", PhotoType.JPEG, UUID.randomUUID().toString()),
-                    PhotoTile("", PhotoType.MP4, UUID.randomUUID().toString()),
-                    PhotoTile("", PhotoType.GIF, UUID.randomUUID().toString()),
-                    PhotoTile("", PhotoType.MPEG, "1"),
-                    PhotoTile("", PhotoType.PNG, UUID.randomUUID().toString()),
-                    PhotoTile("", PhotoType.PNG, UUID.randomUUID().toString()),
-                    PhotoTile("", PhotoType.PNG, UUID.randomUUID().toString()),
-                    PhotoTile("", PhotoType.PNG, UUID.randomUUID().toString()),
-                    PhotoTile("", PhotoType.PNG, "2"),
-                    PhotoTile("", PhotoType.PNG, UUID.randomUUID().toString()),
-                    PhotoTile("", PhotoType.PNG, UUID.randomUUID().toString()),
-                    PhotoTile("", PhotoType.PNG, UUID.randomUUID().toString()),
-                    PhotoTile("", PhotoType.PNG, UUID.randomUUID().toString()),
-                    PhotoTile("", PhotoType.PNG, UUID.randomUUID().toString()),
-                    PhotoTile("", PhotoType.PNG, UUID.randomUUID().toString()),
+                    PhotoTile("", PhotoType.JPEG, UUID.randomUUID().toString(), now),
+                    PhotoTile("", PhotoType.MP4, UUID.randomUUID().toString(), now),
                 ),
                 showAlbumSelectionDialog = false,
                 sort = SortConfig.Gallery.default,
             ),
             handleUiEvent = {},
-            multiSelectionState = rememberMultiSelectionState(items = emptyList())
+            multiSelectionState = rememberMultiSelectionState(items = emptyList()),
+            isBlurred = false
         )
     }
 }
-
